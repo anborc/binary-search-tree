@@ -30,17 +30,25 @@
 (defn new-x [x bst]
   (let [results (ref '()) bst1 (ref bst)]
     (if (nil? (nth @bst1 1))
-      (when (< x (nth @bst1 0)) (dosync (alter bst1 assoc 1 [x nil nil])) (dosync (ref-set results (cons @bst1 @results))) (dosync (ref-set bst1 bst)))
+      (when (< x (nth @bst1 0))
+        (dosync (alter bst1 assoc 1 [x nil nil])
+          (ref-set results (cons @bst1 @results))
+          (ref-set bst1 bst)))
       (when (vector? (nth @bst1 1))
         (let [sub-result (new-x x (nth @bst1 1))]
           (when (not (= sub-result '()))
-            (doseq [s sub-result] (dosync (ref-set results (cons [(nth @bst1 0) s (nth @bst1 2)] @results))))))))
+            (doseq [s sub-result]
+              (dosync (ref-set results (cons [(nth @bst1 0) s (nth @bst1 2)] @results))))))))
     (if (nil? (nth @bst1 2))
-      (when (> x (nth @bst1 0)) (dosync (ref-set bst1 (assoc @bst1 2 [x nil nil]))) (dosync (ref-set results (cons @bst1 @results))) (dosync (ref-set bst1 bst)))
+      (when (> x (nth @bst1 0))
+        (dosync (ref-set bst1 (assoc @bst1 2 [x nil nil]))
+          (ref-set results (cons @bst1 @results))
+          (ref-set bst1 bst)))
       (when (vector? (nth @bst1 2))
         (let [sub-result (new-x x (nth @bst1 2))]
           (when (not (= sub-result '()))
-            (doseq [s sub-result] (dosync (ref-set results (cons [(nth @bst1 0) (nth @bst1 1) s] @results))))))))
+            (doseq [s sub-result]
+              (dosync (ref-set results (cons [(nth @bst1 0) (nth @bst1 1) s] @results))))))))
     @results))
 ;;(println (new-x 5 [4 [1 nil [2 nil [3 nil nil]]] nil]))
 ;;=> ([4 [1 nil [2 nil [3 nil nil]]] [5 nil nil]] [4 [1 nil [2 nil [3 nil [5 nil nil]]]] nil])
@@ -92,8 +100,10 @@
           (let [sets (bst seq)]
             (doseq [set sets]
               (println set)
-              (.write w (with-out-str (pr set))) (.newLine w))))))))
-;;(bst-save 7)
+              ;;(.write w (with-out-str (pr set))) (.newLine w)
+              (.write w (str set)) (.newLine w)
+              )))))))
+;;(bst-save 4)
 
 (defn -main []
   (bst-count 3))
